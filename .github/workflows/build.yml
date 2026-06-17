@@ -12,13 +12,12 @@ jobs:
     
     - uses: actions/setup-java@v4
       with:
-        java-version: '11'
+        java-version: '17'
         distribution: 'temurin'
     
     - run: chmod +x gradlew
     
-    - name: Build APK
-      run: ./gradlew assembleDebug --no-daemon --no-build-cache
+    - run: ./gradlew assembleDebug
     
     - uses: actions/upload-artifact@v4
       if: success()
