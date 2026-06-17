@@ -10,18 +10,21 @@ import android.widget.Toast;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
-import de.robv.android.xposed.callbacks.XC_MethodHook;
 
 public class SwitchUserHook {
 
     public static void hookSecuritySpace(XC_LoadPackage.LoadPackageParam lpparam) {
         try {
+            Class<?> methodHookClass = Class.forName("de.robv.android.xposed.callbacks.XC_MethodHook");
+            Object hookInstance = methodHookClass.getConstructor().newInstance();
+
+            // 使用反射设置 Hook
             XposedHelpers.findAndHookMethod(
                 "com.miui.securityspace.ui.activity.SwitchUserActivity",
                 lpparam.classLoader,
                 "onCreate",
                 Bundle.class,
-                new XC_MethodHook() {
+                (XposedHelpers.XC_MethodHook) methodHookClass.cast(new XposedHelpers.XC_MethodHook() {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         try {
@@ -34,13 +37,13 @@ public class SwitchUserHook {
                                 addReturnButton(activity);
                             }
                         } catch (Exception e) {
-                            XposedBridge.log("[SpaceSwitch] Error: " + e.getMessage());
+                            XposedBridge.log("[SpaceSwitch] afterHookedMethod error: " + e.getMessage());
                         }
                     }
-                }
+                })
             );
         } catch (Exception e) {
-            XposedBridge.log("[SpaceSwitch] Hook failed: " + e.getMessage());
+            XposedBridge.log("[SpaceSwitch] Hook setup failed: " + e.getMessage());
         }
     }
 
