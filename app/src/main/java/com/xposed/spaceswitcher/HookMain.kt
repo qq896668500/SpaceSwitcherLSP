@@ -9,7 +9,7 @@ class HookMain : IXposedHookLoadPackage {
         try {
             if (lpparam.packageName == "com.miui.securityspace") {
                 XposedBridge.log("[SpaceSwitch] Hook MIUI SecuritySpace")
-                SpaceSwitchHook.hookSecuritySpace(lpparam)
+                SwitchUserHook.hookSecuritySpace(lpparam)
             }
         } catch (e: Exception) {
             XposedBridge.log("[SpaceSwitch] Error: ${e.message}")
