@@ -6,7 +6,13 @@ import de.robv.android.xposed.XposedBridge
 
 object SpaceDetector {
 
-    fun getCurrentUserId(): Int = UserHandle.myUserId()
+    fun getCurrentUserId(): Int {
+        return try {
+            UserHandle::class.java.getDeclaredMethod("myUserId").invoke(null) as Int
+        } catch (e: Exception) {
+            0
+        }
+    }
 
     fun isMainSpace(): Boolean = getCurrentUserId() == 0
 
@@ -18,33 +24,7 @@ object SpaceDetector {
             val method = clazz.getDeclaredMethod("getSecondSpaceId", Context::class.java)
             (method.invoke(null, context) as? Int) ?: 10
         } catch (e: Exception) {
-            XposedBridge.log("[SpaceSwitch] Failed to get second space ID: ${e.message}")
             10
         }
-    }
-
-    fun getAllSpaces(context: Context): List<Int> {
-        val spaces = mutableListOf<Int>()
-        try {
-            val userManager = context.getSystemService("user") as? android.os.UserManager
-                ?: return spaces
-
-            val getUsersMethod = userManager::class.java.getDeclaredMethod("getUsers")
-            val users = getUsersMethod.invoke(userManager) as? List<*> ?: return spaces
-
-            users.forEach { user ->
-                try {
-                    val idField = user::class.java.getDeclaredField("id")
-                    idField.isAccessible = true
-                    val userId = idField.get(user) as Int
-                    spaces.add(userId)
-                } catch (e: Exception) {
-                    XposedBridge.log("[SpaceSwitch] Failed to parse user: ${e.message}")
-                }
-            }
-        } catch (e: Exception) {
-            XposedBridge.log("[SpaceSwitch] Failed to get all spaces: ${e.message}")
-        }
-        return spaces.sorted()
     }
 }
